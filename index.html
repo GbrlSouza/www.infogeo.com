@@ -1,65 +1,41 @@
 <!DOCTYPE html>
-<html>
+<html lang="pt-BR">
 <head>
-    <title>Mapa Dinâmico com Países</title>
-    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
-    <style>
-        #map {
-            height: 100vh;
-            width: 100%;
-        }
-    </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>InfoGeo com Vue.js</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/vue@2"></script>
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+    <script src="https://unpkg.com/vue2-google-maps@0.10.7/dist/vue-google-maps.js"></script>
 </head>
 <body>
-    <div id="map"></div>
-    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-    <script src="https://unpkg.com/geojson-world-countries"></script>
-    <script>
-        // Inicializar o mapa
-        var map = L.map('map').setView([0, 0], 2);
+    <div id="app">
+        <div class="map-container">
+            <gmap-map
+                :center="{lat: 0, lng: 0}"
+                :zoom="2"
+                style="width: 100%; height: 100vh;">
+                <gmap-marker
+                    v-for="location in locations"
+                    :key="location.id"
+                    :position="{lat: location.coordinates.latitude, lng: location.coordinates.longitude}"
+                    @click="showModal(location)">
+                </gmap-marker>
+            </gmap-map>
+        </div>
 
-        // Adicionar uma camada de mapa
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-        }).addTo(map);
+        <div v-if="modalVisible" class="modal-overlay" @click="closeModal">
+            <div class="modal-content" @click.stop>
+                <h2>{{ selectedLocation.name }}</h2>
+                <p>{{ wikiData }}</p>
+                <button @click="closeModal">Fechar</button>
+            </div>
+        </div>
 
-        // Função para obter informações de um país usando a API RestCountries
-        function fetchCountryInfo(countryName) {
-            fetch(`https://restcountries.com/v3.1/name/${countryName}?fullText=true`)
-                .then(response => response.json())
-                .then(data => {
-                    const country = data[0];
-                    const info = `
-                        <b>${country.name.common}</b><br>
-                        <strong>Capital:</strong> ${country.capital ? country.capital[0] : 'N/A'}<br>
-                        <strong>Population:</strong> ${country.population.toLocaleString()}<br>
-                        <strong>Area:</strong> ${country.area.toLocaleString()} km²<br>
-                        <strong>Region:</strong> ${country.region}<br>
-                        <strong>Subregion:</strong> ${country.subregion}<br>
-                        <strong>Languages:</strong> ${Object.values(country.languages).join(', ')}<br>
-                        <strong>Currency:</strong> ${Object.values(country.currencies).map(c => c.name).join(', ')}
-                    `;
-                    return info;
-                })
-                .catch(error => {
-                    console.error('Erro ao obter informações do país:', error);
-                    return 'Informações não disponíveis';
-                });
-        }
-
-        // Adicionar dados GeoJSON para os países
-        L.geoJSON(geojsonCountries, {
-            onEachFeature: function (feature, layer) {
-                layer.on({
-                    click: function (e) {
-                        const countryName = feature.properties.name;
-                        fetchCountryInfo(countryName).then(info => {
-                            layer.bindPopup(info).openPopup();
-                        });
-                    }
-                });
-            }
-        }).addTo(map);
-    </script>
+        <div v-if="loading" class="loading">Carregando...</div>
+        <div v-if="errorMessage" class="error">{{ errorMessage }}</div>
+    </div>
+    <script src="app.js"></script>
 </body>
 </html>
