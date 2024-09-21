@@ -3,39 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>InfoGeo com Vue.js</title>
-    <link rel="stylesheet" href="styles.css">
-    <script src="https://cdn.jsdelivr.net/npm/vue@2"></script>
-    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
-    <script src="https://unpkg.com/vue2-google-maps@0.10.7/dist/vue-google-maps.js"></script>
+    <title>InfoGeo</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="script.js" defer></script>
 </head>
 <body>
-    <div id="app">
-        <div class="map-container">
-            <gmap-map
-                :center="{lat: 0, lng: 0}"
-                :zoom="2"
-                style="width: 100%; height: 100vh;">
-                <gmap-marker
-                    v-for="location in locations"
-                    :key="location.id"
-                    :position="{lat: location.coordinates.latitude, lng: location.coordinates.longitude}"
-                    @click="showModal(location)">
-                </gmap-marker>
-            </gmap-map>
+    <div id="map" class="map"></div>
+    <div id="modal" class="modal">
+        <div class="modal-content">
+            <span id="close" class="close">&times;</span>
+            <h2 id="modal-title"></h2>
+            <p id="modal-text"></p>
         </div>
-
-        <div v-if="modalVisible" class="modal-overlay" @click="closeModal">
-            <div class="modal-content" @click.stop>
-                <h2>{{ selectedLocation.name }}</h2>
-                <p>{{ wikiData }}</p>
-                <button @click="closeModal">Fechar</button>
-            </div>
-        </div>
-
-        <div v-if="loading" class="loading">Carregando...</div>
-        <div v-if="errorMessage" class="error">{{ errorMessage }}</div>
     </div>
-    <script src="app.js"></script>
 </body>
 </html>
